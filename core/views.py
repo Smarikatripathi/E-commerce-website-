@@ -31,10 +31,33 @@ def index(request):
 
 def product_list_view(request):
     products = Product.objects.filter(product_status='published')
+
+    category = request.GET.get('category')
+    vendor = request.GET.get('vendor')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+
+    # CATEGORY FILTER
+    if category:
+        products = products.filter(category__id=category)
+
+    # VENDOR FILTER
+    if vendor:
+        products = products.filter(vendor__id=vendor)
+
+    # PRICE FILTER
+    if min_price and max_price:
+        products = products.filter(price__gte=min_price, price__lte=max_price)
+
     context = {
-        'products': products
+        'products': products,
+        'categories': Category.objects.all(),
+        'vendors': Vendor.objects.all(),
+
     }
+
     return render(request, 'core/product_list.html', context)
+
 def category_list_view(request):
     categories = Category.objects.all()
     context = {

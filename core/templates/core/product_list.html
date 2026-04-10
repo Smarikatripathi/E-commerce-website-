@@ -5,68 +5,93 @@
 
 {% block content %}
 
-<h1 style="text-align:center; margin:20px 0;">All Products</h1>
+<h1 class="page-title">All Products</h1>
 
-<div class="products-grid">
+<div class="shop-container">
 
-    {% for product in products %}
+    <!-- ================= LEFT FILTER ================= -->
+    <div class="filter-sidebar">
 
-    <!-- CLICKABLE PRODUCT CARD -->
-    <a href="{% url 'core:product_detail' product.pid %}" class="product-card">
+        <form method="GET">
 
-        <!-- Discount Badge -->
-        {% if product.old_price and product.old_price > product.price %}
-        <div class="product-badges">
-            <span class="discount-badge">
-                -{{ product.get_percentage|floatformat:0 }}%
-            </span>
-        </div>
-        {% endif %}
+            <h4>By Categories</h4>
+            {% for cat in categories %}
+                <label>
+                    <input type="radio" name="category" value="{{ cat.id }}">
+                    {{ cat.title }}
+                </label>
+            {% endfor %}
 
-        <!-- Product Image -->
-        <div class="product-image">
-            <img src="{{ product.image.url }}" alt="{{ product.title }}">
-        </div>
+            <hr>
 
-        <!-- Product Details -->
-        <div class="product-details">
+            <h4>By Vendor</h4>
+            {% for v in vendors %}
+                <label>
+                    <input type="radio" name="vendor" value="{{ v.id }}">
+                    {{ v.title }}
+                </label>
+            {% endfor %}
 
-            <span class="product-category">
-                {{ product.category.title }}
-            </span>
+            <hr>
 
-            <h3 class="product-title">
-                {{ product.title }}
-            </h3>
+            <h4>By Price</h4>
+            <input type="number" name="min_price" placeholder="Min price">
+            <input type="number" name="max_price" placeholder="Max price">
 
-            <div class="product-meta">
-                By <span>{{ product.user.username }}</span>
-            </div>
+            <button type="submit">Apply Filters</button>
 
-            <!-- Price -->
-            <div class="product-footer">
+        </form>
 
-                <div class="product-price">
-                    <span class="current-price">${{ product.price }}</span>
+    </div>
 
-                    {% if product.old_price %}
-                    <span class="old-price">${{ product.old_price }}</span>
-                    {% endif %}
+    <!-- ================= RIGHT PRODUCTS ================= -->
+    <div class="product-area">
+
+        <div class="products-grid">
+
+            {% for product in products %}
+
+            <a href="{% url 'core:product_detail' product.pid %}" class="product-card">
+
+                <div class="product-image">
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}">
                 </div>
 
-                <button class="add-cart-btn">
-                    <i class="fas fa-shopping-cart"></i> Add
-                </button>
+                <div class="product-details">
 
-            </div>
+                    <span class="product-category">{{ product.category.title }}</span>
+
+                    <h3 class="product-title">{{ product.title }}</h3>
+
+                    <div class="product-meta">
+                        By {{ product.user.username }}
+                    </div>
+
+                    <div class="product-footer">
+
+                        <div class="price-box">
+                            <span class="current-price">${{ product.price }}</span>
+
+                            {% if product.old_price %}
+                            <span class="old-price">${{ product.old_price }}</span>
+                            {% endif %}
+                        </div>
+
+                        <button class="add-btn">Add</button>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+            {% empty %}
+            <p>No products found.</p>
+            {% endfor %}
 
         </div>
 
-    </a>
-
-    {% empty %}
-    <p style="text-align:center;">No products available.</p>
-    {% endfor %}
+    </div>
 
 </div>
 
