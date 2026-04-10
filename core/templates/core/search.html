@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+
+<div class="search-results-container">
+
+    <h2>Search Results</h2>
+
+    {% if query %}
+        <p>You searched for: <strong>"{{ query }}"</strong></p>
+    {% endif %}
+
+    {% if products %}
+
+        <div class="product-grid">
+
+            {% for product in products %}
+
+                <div class="product-card">
+
+                    <!-- Product Image -->
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                    {% else %}
+                        <img src="{% static 'images/default.png' %}" alt="No Image">
+                    {% endif %}
+
+                    <!-- Product Info -->
+                    <h3>{{ product.title }}</h3>
+            
+
+                    <p class="price">
+                        ₹{{ product.price }}
+                    </p>
+
+                    <p class="desc">
+                        {{ product.description|truncatewords:15 }}
+                    </p>
+
+                    <!-- Button -->
+                    <a href="{% url 'core:product_detail' product.pid %}" class="btn">
+                        View Product
+                    </a>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <p>No products found matching your search.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

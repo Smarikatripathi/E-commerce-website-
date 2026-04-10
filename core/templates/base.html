@@ -59,17 +59,19 @@
 
                 <!-- Search Bar -->
                 <div class="search-bar">
-                    <div class="search-wrapper">
-                        <select class="category-dropdown">
-                            <option>All Categories</option>
-                            <option>Milks & Dairies</option>
-                            <option>Clothing</option>
-                            <option>Pet Foods</option>
-                            <option>Baking material</option>
-                            <option>Fresh Fruit</option>
-                        </select>
-                        <input type="text" placeholder="Search for items...">
-                        <button class="search-btn"><i class="fas fa-search"></i></button>
+                    <div class="search-wrapper"> 
+                        <form method="GET" action="{% url 'core:search' %}">    
+                        <select name="category" class="category-dropdown">
+    <option value="">All Categories</option>
+    <option value="milk">Milks & Dairies</option>
+    <option value="clothing">Clothing</option>
+    <option value="pet">Pet Foods</option>
+    <option value="baking">Baking material</option>
+    <option value="fruit">Fresh Fruit</option>
+</select>
+                        <input type="text" placeholder="Search for items..."name="q" />
+                        <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+                    </form>
                     </div>
                 </div>
 

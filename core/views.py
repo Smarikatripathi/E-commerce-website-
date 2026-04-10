@@ -3,6 +3,7 @@ from core.models import Category, Vendor, Product, ProductImage, CartOrderItem, 
 from taggit.models import Tag
 # Create your views here.
 from django.shortcuts import render
+from django.db.models import Q
 
 def about(request):
     return render(request, "core/about.html")
@@ -116,3 +117,20 @@ def tag_list_view(request, tag_slug=None):
         'products': products
     }
     return render(request, 'core/tag.html', context)
+
+def search(request):
+    query = request.GET.get('q')
+
+    category = request.GET.get('category')
+
+    products = Product.objects.filter(
+        Q(title__icontains=query) |
+        Q(description__icontains=query),
+        product_status='published'
+    ).order_by("-date")
+
+    context = {
+        'products': products,
+        'query': query
+    }
+    return render(request, 'core/search.html', context)

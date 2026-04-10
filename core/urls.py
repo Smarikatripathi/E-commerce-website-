@@ -24,5 +24,6 @@ urlpatterns = [
     path("blog/", views.blog_list, name="blog"),
     path("pages/", views.pages, name="pages"),
     path("products/tag/<slug:tag_slug>/", views.tag_list_view, name="tag"),
+    path("search/", views.search, name="search"),
 
 ]
