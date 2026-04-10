@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <!-- Search + Info Row -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <p class="mb-0 text-muted">
+                We have <strong>{{ vendors.paginator.count }}</strong> vendors now
+            </p>
+        </div>
+
+        <div class="col-md-6 text-end">
+            <form method="get" class="d-flex justify-content-end">
+                <input type="text"
+                       name="q"
+                       class="form-control me-2"
+                       placeholder="Search vendors..."
+                       value="{{ request.GET.q }}">
+                <button class="btn btn-outline-secondary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vendor Cards Grid -->
+    <div class="vendor-grid">
+
+    {% for vendor in vendors %}
+    <div class="vendor-card">
+
+        <div class="vendor-image-wrapper">
+            {% if vendor.image %}
+                <img src="{{ vendor.image.url }}" alt="{{ vendor.name }}">
+            {% else %}
+                <img src="{% static 'images/no-image.png' %}" alt="No image">
+            {% endif %}
+        </div>
+
+        <div class="vendor-content">
+            <small class="vendor-year">Since {{ vendor.created_at|date:"Y" }}</small>
+            <h5>{{ vendor.name }}</h5>
+
+            <div class="vendor-rating">
+                {% for i in "12345" %}
+                    <i class="fas fa-star"></i>
+                {% endfor %}
+                <span>({{ vendor.rating|default:"0.0" }})</span>
+            </div>
+
+            <p><strong>Address:</strong> {{ vendor.address }}</p>
+            <p><strong>Phone:</strong> {{ vendor.phone }}</p>
+
+            <div class="vendor-footer">
+                <span class="vendor-badge">
+                    {{ vendor.products.count }} Products
+                </span>
+
+                <a href="{% url 'core:vendor_detail' vendor.vid %}" class="vendor-btn">
+                    Visit Store →
+                </a>
+            </div>
+        </div>
+
+    </div>
+    {% empty %}
+    <p>No vendors found.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

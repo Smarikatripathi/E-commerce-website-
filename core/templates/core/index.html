@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ST Mart{% endblock %}
+
+{% block content %}
+<div class="home-layout">
+
+  <!-- =========================
+     LEFT SIDEBAR (FULL)
+========================= -->
+<aside class="sidebar">
+
+    <!-- ================= CATEGORY ================= -->
+    <div class="sidebar-widget">
+        <h3 class="widget-title">Categories</h3>
+
+        <ul class="category-list">
+            {% for cat in categories %}
+            <li>
+                <a href="{% url 'core:product_list' %}?category={{ cat.id }}">
+
+                    <div class="cat-img">
+                        {% if cat.image %}
+                            <img src="{{ cat.image.url }}">
+                        {% else %}
+                            <img src="{% static 'assets/images/default.png' %}">
+                        {% endif %}
+                    </div>
+
+                    <span class="cat-title">{{ cat.title }}</span>
+
+                    <span class="cat-count">{{ cat.products.count }}</span>
+
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+
+    <!-- ================= PRICE FILTER ================= -->
+    <div class="sidebar-widget">
+        <h3 class="widget-title">Filter by Price</h3>
+
+        <input type="range" min="0" max="500" value="250" class="price-slider">
+
+        <div class="filter-values">
+            <span>$0</span>
+            <span>$500</span>
+        </div>
+    </div>
+
+
+    <!-- ================= COLOR FILTER ================= -->
+    <div class="sidebar-widget">
+        <h3 class="widget-title">Colors</h3>
+
+        <div class="color-filter">
+            <span class="color c1"></span>
+            <span class="color c2"></span>
+            <span class="color c3"></span>
+            <span class="color c4"></span>
+            <span class="color c5"></span>
+        </div>
+    </div>
+
+
+    <!-- ================= CONDITION FILTER ================= -->
+    <div class="sidebar-widget">
+        <h3 class="widget-title">Condition</h3>
+
+        <label class="checkbox">
+            <input type="checkbox" name="condition" value="new"> New
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="condition" value="used"> Used
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="condition" value="refurbished"> Refurbished
+        </label>
+    </div>
+
+
+    <!-- ================= NEW PRODUCTS ================= -->
+    <div class="sidebar-widget">
+        <h3 class="widget-title">New Products</h3>
+
+        {% for p in products|slice:":5" %}
+        <div class="new-product">
+
+            <div class="new-img">
+                <img src="{{ p.image.url }}" alt="">
+            </div>
+
+            <div class="new-info">
+                <h4>{{ p.title }}</h4>
+                <div class="price">${{ p.price }}</div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+</aside>
+    <!-- Main Content -->
+    <div class="main-home-content">
+<div class="hero">
+    <div class="hero-slider">
+
+        {% for slide in slides %}
+        <div class="hero-slide {% if forloop.first %}active{% endif %}">
+            
+            <img src="{{ slide.image.url }}" alt="{{ slide.title }}">
+
+            <div class="hero-content">
+                <h1>{{ slide.title }}</h1>
+                <p>{{ slide.subtitle }}</p>
+
+                <a href="#" class="btn">Shop Now</a>
+            </div>
+
+        </div>
+        {% endfor %}
+
+        <!-- navigation buttons -->
+        <button class="prev">&#10094;</button>
+        <button class="next">&#10095;</button>
+
+    </div>
+</div>
+
+       <!-- Popular Products -->
+<section class="popular-products">
+
+    <div class="section-header">
+        <h2>Popular Products</h2>
+
+        <!-- 🔥 VIEW MORE BUTTON -->
+        <a href="{% url 'core:all_products' %}" class="view-more-btn">
+    View More →
+</a>
+    </div>
+
+    <div class="products-grid">
+
+        {% for product in products %}
+        <div class="product-card">
+
+            <!-- DISCOUNT BADGE FIXED -->
+            {% if product.old_price > product.price %}
+            <div class="product-badge sale">
+                -{{ product.get_percentage|floatformat:0 }}%
+            </div>
+            {% endif %}
+
+            <!-- IMAGE -->
+            <div class="product-image">
+                <img src="{{ product.image.url }}">
+            </div>
+
+            <!-- DETAILS -->
+            <div class="product-details">
+
+                <span class="product-category">
+                    {{ product.category.title }}
+                </span>
+
+                <h3 class="product-title">
+                    {{ product.title }}
+                </h3>
+
+                <!-- PRICE -->
+                <div class="product-price">
+                    <span class="current-price">${{ product.price }}</span>
+
+                    {% if product.old_price %}
+                    <span class="old-price">
+                        ${{ product.old_price }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <a href="{% url 'core:product_detail' product.pid %}">
+                    <button class="add-cart-btn">View</button>
+                </a>
+
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+</section>
+
+<!-- Deals of the Day -->
+<section class="deals-section">
+
+    <div class="section-header">
+        <h2>Deals Of The Day</h2>
+
+        <!-- 🔥 VIEW MORE BUTTON -->
+        <a href="{% url 'core:hot_deals' %}" class="view-all">View More →</a>
+    </div>
+
+    <div class="deals-grid">
+
+        {% for product in deals %}
+        <div class="deal-card">
+
+            <!-- IMAGE + COUNTDOWN OVERLAY -->
+            <div class="deal-image">
+
+                <img src="{{ product.image.url }}">
+
+                <!-- 🔥 COUNTDOWN INSIDE IMAGE -->
+                <div class="countdown-timer" data-end="{{ product.deal_end|date:'Y-m-d H:i:s' }}">
+                    <div class="time-unit"><span class="number days">00</span><span class="label">D</span></div>
+                    <div class="time-unit"><span class="number hours">00</span><span class="label">H</span></div>
+                    <div class="time-unit"><span class="number minutes">00</span><span class="label">M</span></div>
+                    <div class="time-unit"><span class="number seconds">00</span><span class="label">S</span></div>
+                </div>
+
+            </div>
+
+            <!-- INFO -->
+            <div class="deal-info">
+
+                <h4>{{ product.title }}</h4>
+
+                <p>
+                    <strong>${{ product.price }}</strong>
+
+                    {% if product.old_price %}
+                    <span class="old-price">
+                        ${{ product.old_price }}
+                    </span>
+                    {% endif %}
+                </p>
+
+                <a href="{% url 'core:product_detail' product.pid %}">
+                    <button class="add-cart-btn">View Deal</button>
+                </a>
+
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+</section>
+{% endblock %}

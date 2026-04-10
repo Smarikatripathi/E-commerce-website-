@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row g-5">
+
+        <!-- LEFT: Product Images -->
+        <div class="col-lg-5">
+            <div class="product-gallery">
+                <div class="main-image mb-3">
+                    <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.title }}">
+                </div>
+
+                <div class="thumbnail-images d-flex gap-2">
+                    {% for img in product.gallery.all %}
+                    <img src="{{ img.image.url }}" class="img-thumbnail thumb-img">
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER: Product Info -->
+        <div class="col-lg-4">
+
+            <h2 class="fw-bold">{{ product.title }}</h2>
+
+            <!-- Rating -->
+            <div class="d-flex align-items-center mb-2">
+                <div class="text-warning me-2">
+                    ★★★★☆
+                </div>
+                <small class="text-muted">({{ product.reviews.count }} reviews)</small>
+            </div>
+
+            <!-- Price -->
+            <div class="price-box my-3">
+                <span class="fs-2 fw-bold text-success">
+                    ${{ product.price }}
+                </span>
+                {% if product.old_price %}
+                <span class="text-muted text-decoration-line-through ms-2">
+                    ${{ product.old_price }}
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <p class="text-muted">
+                {{ product.description|truncatechars:180 }}
+            </p>
+
+            <!-- Size -->
+            <div class="mb-3">
+                <strong>Size / Weight:</strong>
+                <div class="btn-group ms-2">
+                    <button class="btn btn-outline-secondary btn-sm">50g</button>
+                    <button class="btn btn-success btn-sm">60g</button>
+                    <button class="btn btn-outline-secondary btn-sm">80g</button>
+                    <button class="btn btn-outline-secondary btn-sm">100g</button>
+                </div>
+            </div>
+
+            <!-- Add to Cart -->
+            <div class="d-flex align-items-center gap-3 mt-4">
+                <input type="number" value="1" min="1" class="form-control w-25">
+
+                <button class="btn btn-success px-4">
+                    <i class="fas fa-shopping-cart me-1"></i> Add to Cart
+                </button>
+
+                <button class="btn btn-outline-secondary">
+                    <i class="far fa-heart"></i>
+                </button>
+            </div>
+
+            <!-- Meta -->
+            <ul class="list-unstyled small text-muted mt-4">
+                <li><strong>SKU:</strong> {{ product.sku }}</li>
+                <li><strong>Category:</strong> {{ product.category.name }}</li>
+                <li><strong>Tags:</strong> Organic, Healthy</li>
+            </ul>
+
+        </div>
+
+        <!-- RIGHT: Vendor Info -->
+        <div class="col-lg-3">
+
+            <!-- Delivery Box -->
+            <div class="border rounded p-3 mb-4">
+                <p class="fw-bold mb-2">Return & Warranty</p>
+                <ul class="list-unstyled small text-muted">
+                    <li>✔ 100% Authentic</li>
+                    <li>✔ 10 Days Return</li>
+                    <li>✔ 12 Months Warranty</li>
+                </ul>
+            </div>
+
+            <!-- Vendor Box -->
+            <div class="border rounded p-3">
+                <h6 class="fw-bold">Vendor</h6>
+
+                <p class="mb-1">
+                    <strong>
+                        <a href="{% url 'core:vendor_detail' product.vendor.vid %}">
+                            {{ product.vendor.name }}
+                        </a>
+                    </strong>
+                </p>
+
+                <div class="text-warning mb-2">
+                    ★★★★☆
+                    <small class="text-muted">(32 reviews)</small>
+                </div>
+
+                <p class="small text-muted mb-1">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    {{ product.vendor.address }}
+                </p>
+
+                <p class="small text-muted">
+                    <i class="fas fa-phone me-1"></i>
+                    {{ product.vendor.phone }}
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

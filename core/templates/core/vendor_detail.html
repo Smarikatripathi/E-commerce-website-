@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- ===== Breadcrumb ===== -->
+<div class="vd-container vd-breadcrumb">
+    <a href="/">Home</a> ›
+    <span>Store</span> ›
+    <strong>{{ vendor.name }}</strong>
+</div>
+
+<!-- ===== Vendor Hero ===== -->
+<section class="vd-hero">
+    <div class="vd-hero-overlay"></div>
+
+    <div class="vd-container vd-hero-inner">
+        <div class="vd-hero-left">
+            <span class="vd-since">Since {{ vendor.created_at|date:"Y" }}</span>
+            <h1>{{ vendor.name }}</h1>
+
+            <div class="vd-rating">★★★★★ <span>(4.0)</span></div>
+            <p class="vd-tagline">I am an Amazing Vendor</p>
+
+            <ul class="vd-info">
+                <li>📍 {{ vendor.address }}</li>
+                <li>📞 {{ vendor.phone }}</li>
+            </ul>
+
+            <div class="vd-social">
+                <a href="#">F</a>
+                <a href="#">T</a>
+                <a href="#">I</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Main Layout ===== -->
+<div class="vd-container vd-main">
+
+    <!-- Sidebar -->
+    <aside class="vd-sidebar">
+        <div class="vd-box">
+            <img src="{% static 'images/fresh-vegetable.jpg' %}">
+        </div>
+
+        <div class="vd-box">
+            <h4>Category</h4>
+            <ul>
+                <li>Milks & Dairies</li>
+                <li>Clothing</li>
+                <li>Pet Foods</li>
+                <li>Fresh Fruit</li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Products -->
+    <section class="vd-products">
+
+        <div class="vd-topbar">
+            <p>We found {{ products.count }} items for you!</p>
+
+            <select>
+                <option>Sort by: Featured</option>
+                <option>Price: Low to High</option>
+                <option>Price: High to Low</option>
+            </select>
+        </div>
+
+        {% for product in products %}
+        <div class="vd-product">
+
+            <img src="{{ product.image.url }}" class="vd-product-img">
+
+            <div class="vd-product-info">
+                <small>{{ product.category }}</small>
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.description|truncatechars:80 }}</p>
+
+                <div class="vd-product-bottom">
+                    <span>${{ product.price }}</span>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </section>
+</div>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Products{% endblock %}
+
+{% block content %}
+<h1 style="text-align:center; margin:20px 0;">All Products</h1>
+
+<div class="products-grid">
+    {% for product in products %}
+    <div class="product-card">
+
+        <!-- Discount Badge -->
+        {% if product.old_price > product.price %}
+        <div class="product-badges">
+            <span class="discount-badge">
+                -{{ product.get_percentage|floatformat:0 }}%
+            </span>
+        </div>
+        {% endif %}
+
+        <!-- Product Image -->
+        <div class="product-image">
+            <img src="{{ product.image.url }}" alt="{{ product.title }}">
+        </div>
+
+        <!-- Product Details -->
+        <div class="product-details">
+            <span class="product-category">{{ product.category.title }}</span>
+            <h3 class="product-title">{{ product.title }}</h3>
+            <div class="product-meta">
+                By <span>{{ product.user.username }}</span>
+            </div>
+
+            <!-- Price -->
+            <div class="product-footer">
+                <div class="product-price">
+                    <span class="current-price">${{ product.price }}</span>
+                    {% if product.old_price %}
+                    <span class="old-price">${{ product.old_price }}</span>
+                    {% endif %}
+                </div>
+
+                <button class="add-cart-btn">
+                    <i class="fas fa-shopping-cart"></i> Add to cart
+                </button>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p style="text-align:center;">No products available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

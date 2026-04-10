@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign Out - Nest Organic & Grocery eCommerce{% endblock %}
+
+{% block content %}
+<div class="signout-page">
+    <div class="container">
+        <div class="signout-card">
+            <div class="signout-icon">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <h2>Come Back Soon!</h2>
+            <p>You have been successfully logged out of your account.</p>
+            
+            <div class="signout-message">
+                <p>Thank you for shopping with us. We hope to see you again soon!</p>
+            </div>
+
+            <div class="signout-actions">
+                <a href="{% url 'userauths:sign-in' %}" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In Again
+                </a>
+                <a href="{% url 'index' %}" class="btn-secondary">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </div>
+
+            <div class="signout-suggestions">
+                <h3>Before You Go...</h3>
+                <div class="suggestion-grid">
+                    <div class="suggestion-item">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h4>Continue Shopping</h4>
+                        <p>Browse our latest products and deals</p>
+                        <a href="{% url 'index' %}">Shop Now</a>
+                    </div>
+                    <div class="suggestion-item">
+                        <i class="fas fa-tags"></i>
+                        <h4>Check Deals</h4>
+                        <p>Don't miss our special offers</p>
+                        <a href="#">View Deals</a>
+                    </div>
+                    <div class="suggestion-item">
+                        <i class="fas fa-envelope"></i>
+                        <h4>Stay Updated</h4>
+                        <p>Subscribe to our newsletter</p>
+                        <a href="#">Subscribe</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="signout-feedback">
+                <p>Was there something wrong?</p>
+                <a href="#" class="feedback-link">Send us your feedback</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

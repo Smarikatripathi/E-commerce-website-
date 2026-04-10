@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="main-content">
+    <div class="container">
+
+        <!-- Page Header -->
+        <div style="margin-bottom: 30px; text-align: center;">
+            <h2>{{ categories.count }} Categories</h2>
+        </div>
+
+        <!-- Categories Grid -->
+        <div class="categories-grid">
+
+            {% for cat in categories %}
+            <div class="category-card">
+
+                <!-- Image Container -->
+                <div class="category-image">
+                    {% if cat.image %}
+                        <img src="{{ cat.image.url }}" alt="{{ cat.title }}">
+                    {% else %}
+                        <img src="{% static 'images/no-image.png' %}" alt="No image">
+                    {% endif %}
+                </div>
+
+                <!-- Category Details -->
+                <div class="category-details" style="padding:10px;">
+                    <h3 style="font-size:16px; margin:10px 0 5px 0;">{{ cat.title }}</h3>
+                    <p style="font-size:13px; color:#666;">{{ cat.products.count }} Products</p>
+
+                    <a href="{% url 'core:product_list' %}?category={{ cat.id }}"
+                       class="btn-submit"
+                       style="margin-top: 10px; display: inline-block;">
+                        View Products
+                    </a>
+                </div>
+
+            </div>
+            {% empty %}
+                <p style="text-align:center;">No categories found.</p>
+            {% endfor %}
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+

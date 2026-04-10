@@ -1,0 +1,77 @@
+<!-- sign-up.html → renders the form fields in the browser with HTML + CSS. -->
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign Up | Nest Mart{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="container auth-container">
+        <div class="auth-card">
+            <div class="auth-left">
+                <div class="welcome">
+                    <h3>Welcome to Nest</h3>
+                    <p>Create an account to enjoy fast checkout, order tracking, and exclusive deals.</p>
+                </div>
+                <ul class="benefits">
+                    <li><i class="fas fa-check-circle"></i> Fast, secure checkout</li>
+                    <li><i class="fas fa-check-circle"></i> Track orders easily</li>
+                    <li><i class="fas fa-check-circle"></i> Exclusive member offers</li>
+                </ul>
+                <div class="illustration">
+                    <img src="{% static 'assets/images/signup-illustration.png' %}" alt="Signup illustration">
+                </div>
+            </div>
+
+            <div class="auth-right">
+                <h2>Create Account</h2>
+                <p class="muted">Already have an account? <a href="{% url 'userauths:sign-in' %}">Login here</a></p>
+
+                <div class="social-login">
+                    <button type="button" class="social-btn social-facebook">
+                        <i class="fab fa-facebook-f"></i>
+                        Continue with Facebook
+                    </button>
+                    <button type="button" class="social-btn social-google">
+                        <i class="fab fa-google"></i>
+                        Continue with Google
+                    </button>
+                </div>
+
+                <div class="or-divider"><span>or</span></div>
+
+                <form method="POST" class="signup-form">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+
+                    <div class="form-group">
+                        {{ form.username.errors }}
+                        {{ form.username }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.email.errors }}
+                        {{ form.email }}
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.password1.errors }}
+                            {{ form.password1 }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password2.errors }}
+                            {{ form.password2 }}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Create Account</button>
+                </form>
+
+                <p class="privacy">By creating an account you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
