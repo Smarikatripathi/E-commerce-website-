@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-5">
+
+    <h2>🧾 Checkout</h2>
+
+    <div class="row mt-4">
+
+        <!-- LEFT: PRODUCTS -->
+        <div class="col-lg-8">
+
+            {% for product in products %}
+
+            <div class="border p-3 mb-3 d-flex align-items-center">
+
+                <img src="{{ product.image.url }}" width="80">
+
+                <div class="ms-3 flex-grow-1">
+
+                    <h5>{{ product.title }}</h5>
+                    <p>Qty: {{ product.quantity }}</p>
+                    <p>Price: ${{ product.price }}</p>
+                    <p><strong>Total: ${{ product.total }}</strong></p>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <!-- RIGHT: SUMMARY -->
+        <div class="col-lg-4">
+
+            <div class="border p-3">
+
+                <h4>Order Summary</h4>
+
+                <hr>
+
+                <p><strong>Total Amount:</strong> ${{ total_price }}</p>
+
+                <a href="#" class="btn btn-success w-100 mt-3">
+                    Place Order
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

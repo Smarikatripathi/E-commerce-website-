@@ -38,7 +38,6 @@
         </ul>
     </div>
 
-
     <!-- ================= PRICE FILTER ================= -->
     <div class="sidebar-widget">
         <h3 class="widget-title">Filter by Price</h3>
@@ -185,6 +184,9 @@
 
                 <a href="{% url 'core:product_detail' product.pid %}">
                     <button class="add-cart-btn">View</button>
+                    <a href="{% url 'core:add_to_cart' product.pid %}">
+    <button class="add-cart-btn">Add to Cart</button>
+</a>
                 </a>
 
             </div>

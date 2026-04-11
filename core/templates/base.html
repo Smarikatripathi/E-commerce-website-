@@ -129,12 +129,12 @@
                         </ul>
                     </div>
 
-                    <a href="#" class="icon-link">
+                    <a href="{% url 'core:wishlist' %}" class="icon-link">
                         <i class="far fa-heart"></i>
                         <span class="badge">2</span>
                         <span>Wishlist</span>
                     </a>
-                    <a href="#" class="icon-link">
+                    <a href="{% url 'core:cart' %}" class="icon-link">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="badge">2</span>
                         <span>Cart</span>
@@ -156,7 +156,7 @@
                 <ul class="nav-menu">
                     <li><a href="{% url 'core:hot_deals' %}" class="nav-link"><i class="fas fa-fire"></i> Hot Deals</a></li>
                     <li><a href="{% url 'index' %}" class="nav-link active">Home</a></li>
-                    <li><a href="{% url 'core:shop' %}" class="nav-link">Shop <i class="fas fa-chevron-down"></i></a></li>
+                    <li><a href="{% url 'core:product_list' %}" class="nav-link">Products <i class="fas fa-chevron-down"></i></a></li>
                     <li><a href="{% url 'core:vendor_list' %}" class="nav-link">Vendors <i class="fas fa-chevron-down"></i></a></li>
                     <li><a href="{% url 'core:mega_menu' %}" class="nav-link">Mega menu <i class="fas fa-chevron-down"></i></a></li>
                     <li><a href="{% url 'core:blog' %}" class="nav-link">Blog <i class="fas fa-chevron-down"></i></a></li>
@@ -203,7 +203,7 @@
                         <li><a href="#">Delivery Information</a></li>
                         <li><a href="#">Privacy Policy</a></li>
                         <li><a href="#">Terms & Conditions</a></li>
-                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="{% url 'core:contact' %}">Contact Us</a></li>
                         <li><a href="#">Support Center</a></li>
                         <li><a href="#">Careers</a></li>
                     </ul>
@@ -212,7 +212,7 @@
                     <h4>Account</h4>
                     <ul class="footer-links">
                         <li><a href="{% url 'userauths:sign-in' %}">Sign In</a></li>
-                        <li><a href="#">View Cart</a></li>
+                        <li><a href="{% url 'core:cart' %}">View Cart</a></li>
                         <li><a href="#">My Wishlist</a></li>
                         <li><a href="#">Track My Order</a></li>
                         <li><a href="#">Help Ticket</a></li>

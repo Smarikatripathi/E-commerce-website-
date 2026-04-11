@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-5">
+
+    <h2 class="mb-4">🛒 Your Cart</h2>
+
+    {% if products %}
+
+    <div class="row">
+
+        <!-- LEFT: PRODUCTS -->
+        <div class="col-lg-8">
+
+            {% for product in products %}
+
+            <div class="card mb-3 p-3 d-flex flex-row align-items-center">
+
+                <!-- IMAGE -->
+                <img src="{{ product.image.url }}" width="100" class="rounded">
+
+                <!-- INFO -->
+                <div class="ms-3 flex-grow-1">
+
+                    <h5>{{ product.title }}</h5>
+                    <p>Price: ${{ product.price }}</p>
+
+                    <p>Qty: {{ product.quantity }}</p>
+
+                    <p><strong>Total: ${{ product.total }}</strong></p>
+
+                </div>
+
+                <!-- REMOVE BUTTON -->
+                <a href="{% url 'core:remove_from_cart' product.pid %}" 
+                class="btn btn-danger btn-sm">Remove</a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <!-- RIGHT: SUMMARY -->
+        <div class="col-lg-4">
+
+            <div class="border p-3 rounded">
+
+                <h4>Order Summary</h4>
+
+                <hr>
+
+                <p><strong>Total:</strong> ${{ total_price }}</p>
+
+               
+                    <a href="{% url 'core:checkout' %}" class="btn btn-success w-100 mt-3">
+    Proceed to Checkout
+</a>
+               
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+        <p>Your cart is empty 🛒</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

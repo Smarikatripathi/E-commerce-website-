@@ -1,4 +1,4 @@
-from django.shortcuts import HttpResponse, render, get_object_or_404
+from django.shortcuts import HttpResponse, redirect, render, get_object_or_404
 from core.models import Category, Vendor, Product, ProductImage, CartOrderItem, CartOrderItems, Tags, Wishlist, ProductReview, Address, HeroSlide
 from taggit.models import Tag
 # Create your views here.
@@ -157,3 +157,92 @@ def search(request):
         'query': query
     }
     return render(request, 'core/search.html', context)
+
+def add_to_cart(request, product_id):
+    cart = request.session.get('cart', {})
+
+    product_id = str(product_id)
+
+    quantity = int(request.POST.get('quantity', 1)) if request.method == "POST" else 1
+
+    if product_id in cart:
+        cart[product_id] += quantity
+    else:
+        cart[product_id] = quantity
+
+    request.session['cart'] = cart
+    request.session.modified = True
+
+    return redirect('core:cart')
+def cart_view(request):
+    cart = request.session.get('cart', {})
+
+    products = []
+    total_price = 0
+
+    for product_id, quantity in cart.items():
+        product = get_object_or_404(Product, pid=product_id)
+
+        product.quantity = quantity
+        product.total = product.price * quantity
+
+        total_price += product.total
+        products.append(product)
+
+    return render(request, 'core/cart.html', {
+        'products': products,
+        'total_price': total_price
+    })
+
+def remove_from_cart(request, product_id):
+    cart = request.session.get('cart', {})
+
+    product_id = str(product_id)
+
+    if product_id in cart:
+        del cart[product_id]   # remove item completely
+
+    request.session['cart'] = cart
+    request.session.modified = True
+
+    return redirect('core:cart')
+
+def checkout_view(request):
+    cart = request.session.get('cart', {})
+
+    products = []
+    total_price = 0
+
+    for product_id, quantity in cart.items():
+        product = Product.objects.get(pid=product_id)
+
+        product.quantity = quantity
+        product.total = product.price * quantity
+
+        total_price += product.total
+        products.append(product)
+
+    return render(request, 'core/checkout.html', {
+        'products': products,
+        'total_price': total_price
+    })
+
+def checkout_view(request):
+    cart = request.session.get('cart', {})
+
+    products = []
+    total_price = 0
+
+    for product_id, quantity in cart.items():
+        product = Product.objects.get(pid=product_id)
+
+        product.quantity = quantity
+        product.total = product.price * quantity
+
+        total_price += product.total
+        products.append(product)
+
+    return render(request, 'core/checkout.html', {
+        'products': products,
+        'total_price': total_price
+    })
