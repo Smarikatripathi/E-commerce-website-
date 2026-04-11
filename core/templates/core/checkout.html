@@ -7,31 +7,44 @@
 
     <div class="row mt-4">
 
-        <!-- LEFT: PRODUCTS -->
+        <!-- LEFT SIDE: CART ITEMS -->
         <div class="col-lg-8">
 
             {% for product in products %}
 
             <div class="border p-3 mb-3 d-flex align-items-center">
 
-                <img src="{{ product.image.url }}" width="80">
+                <!-- Product Image -->
+                <img src="{{ product.image.url }}" width="90" height="90">
 
+                <!-- Product Details -->
                 <div class="ms-3 flex-grow-1">
 
                     <h5>{{ product.title }}</h5>
-                    <p>Qty: {{ product.quantity }}</p>
-                    <p>Price: ${{ product.price }}</p>
-                    <p><strong>Total: ${{ product.total }}</strong></p>
+
+                    <p class="mb-1">
+                        Price: ${{ product.price }}
+                    </p>
+
+                    <p class="mb-1">
+                        Quantity: {{ product.quantity }}
+                    </p>
+
+                    <p class="fw-bold">
+                        Total: ${{ product.total }}
+                    </p>
 
                 </div>
 
             </div>
 
+            {% empty %}
+                <p>Your cart is empty 😢</p>
             {% endfor %}
 
         </div>
 
-        <!-- RIGHT: SUMMARY -->
+        <!-- RIGHT SIDE: ORDER SUMMARY -->
         <div class="col-lg-4">
 
             <div class="border p-3">
@@ -40,11 +53,26 @@
 
                 <hr>
 
-                <p><strong>Total Amount:</strong> ${{ total_price }}</p>
+                <p>
+                    <strong>Total Amount:</strong>
+                    ${{ total_price }}
+                </p>
 
-                <a href="#" class="btn btn-success w-100 mt-3">
-                    Place Order
-                </a>
+                <!-- PLACE ORDER FORM -->
+                <form method="POST" action="{% url 'core:place_order' %}">
+                    {% csrf_token %}
+
+                    <input type="text" name="full_name" placeholder="Full Name" class="form-control mb-2" required>
+
+                    <input type="text" name="address" placeholder="Address" class="form-control mb-2" required>
+
+                    <input type="text" name="phone" placeholder="Phone" class="form-control mb-3" required>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        Place Order
+                    </button>
+
+                </form>
 
             </div>
 
