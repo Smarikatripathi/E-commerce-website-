@@ -280,7 +280,7 @@ def place_order(request):
         request.session['cart'] = {}
 
         # 6. REDIRECT TO PAYMENT PAGE (later gateway)
-        return redirect('core:initiate_payment', order.id)
+        return redirect('core:order_success', order.id)
 
     return redirect('core:checkout')
 
@@ -463,3 +463,10 @@ def payment_success(request):
 
 def payment_failed(request):
     return render(request, "core/payment_failed.html")        
+
+def order_success(request, order_id):
+    order = Order.objects.get(id=order_id)
+
+    return render(request, "core/order_success.html", {
+        "order": order
+    })

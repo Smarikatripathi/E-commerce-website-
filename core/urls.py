@@ -31,12 +31,12 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('place-order/', views.place_order, name='place_order'),
     path('pay/<int:order_id>/', views.initiate_payment, name='initiate_payment'),
-     path("pay/khalti/<int:order_id>/", views.khalti_payment),
-    path("payment/success/", views.khalti_verify),
+    #path("pay/khalti/<int:order_id>/", views.khalti_payment),
+    #path("payment/success/", views.khalti_verify),
     path("payment/success/", views.khalti_success),
     path('verify-khalti/', views.verify_khalti, name='verify_khalti'),
     path("payment/success/", views.payment_success, name="payment_success"),
     path("payment/failed/", views.payment_failed, name="payment_failed"),
-
+    path("order-success/<int:order_id>/", views.order_success, name="order_success"),
 
 ]

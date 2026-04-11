@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Success{% endblock %}
+
+{% block content %}
+
+<style>
+    .success-container {
+        max-width: 700px;
+        margin: 50px auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .success-icon {
+        font-size: 70px;
+        color: #28a745;
+        margin-bottom: 10px;
+    }
+
+    .success-title {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .success-msg {
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .order-box {
+        text-align: left;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .order-box p {
+        margin: 5px 0;
+        font-size: 15px;
+    }
+
+    .btn-group {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 10px 18px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: #000;
+        color: #fff;
+    }
+
+    .btn-outline {
+        border: 1px solid #000;
+        color: #000;
+    }
+
+    .btn:hover {
+        opacity: 0.85;
+    }
+</style>
+
+<div class="success-container">
+
+    <!-- SUCCESS ICON -->
+    <div class="success-icon">✔</div>
+
+    <!-- TITLE -->
+    <div class="success-title">Order Placed Successfully!</div>
+
+    <div class="success-msg">
+        Thank you for your purchase. Your order has been confirmed and is being processed.
+    </div>
+
+    <!-- ORDER DETAILS -->
+    <div class="order-box">
+        <p><strong>Order ID:</strong> #{{ order.id }}</p>
+        <p><strong>Name:</strong> {{ order.full_name }}</p>
+        <p><strong>Phone:</strong> {{ order.phone }}</p>
+        <p><strong>Total Amount:</strong> Rs. {{ order.total_price }}</p>
+        <p><strong>Status:</strong> Processing</p>
+        <p><strong>Payment:</strong> Cash on Delivery / Khalti</p>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="btn-group">
+        <a href="{% url 'core:index' %}" class="btn btn-primary">Continue Shopping</a>
+        <a href="{% url 'core:orders' %}" class="btn btn-outline">View My Orders</a>
+    </div>
+
+</div>
+
+{% endblock %}
