@@ -1,85 +1,123 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout{% endblock %}
+
 {% block content %}
 
-<div class="container py-5">
+<div class="container" style="max-width:900px; margin:auto; padding:20px;">
 
-    <h2>🧾 Checkout</h2>
+    <h2 style="text-align:center; margin-bottom:20px;">Checkout</h2>
 
-    <div class="row mt-4">
+    <!-- ================= ORDER SUMMARY ================= -->
+    <div style="border:1px solid #ddd; padding:15px; margin-bottom:20px;">
+    <h4>Order Summary</h4>
 
-        <!-- LEFT SIDE: CART ITEMS -->
-        <div class="col-lg-8">
-
-            {% for product in products %}
-
-            <div class="border p-3 mb-3 d-flex align-items-center">
-
-                <!-- Product Image -->
-                <img src="{{ product.image.url }}" width="90" height="90">
-
-                <!-- Product Details -->
-                <div class="ms-3 flex-grow-1">
-
-                    <h5>{{ product.title }}</h5>
-
-                    <p class="mb-1">
-                        Price: ${{ product.price }}
-                    </p>
-
-                    <p class="mb-1">
-                        Quantity: {{ product.quantity }}
-                    </p>
-
-                    <p class="fw-bold">
-                        Total: ${{ product.total }}
-                    </p>
-
-                </div>
-
+    {% if products %}
+        {% for product in products %}
+            <div style="display:flex; justify-content:space-between; margin:5px 0;"> 
+                <span>{{ product.title }} (x{{ product.quantity }})</span>
+                <span>Rs. {{ product.total }}</span>
             </div>
+        {% endfor %}
 
-            {% empty %}
-                <p>Your cart is empty 😢</p>
-            {% endfor %}
+        <hr>
 
+        <h4 style="text-align:right;">
+            Total: Rs. {{ total_price }}
+        </h4>
+    {% else %}
+        <p>Your cart is empty</p>
+    {% endif %}
+</div>
+    <!-- ================= SHIPPING FORM ================= -->
+    <form method="POST" action="{% url 'core:place_order' %}">
+        {% csrf_token %}
+
+        <div style="margin-bottom:15px;">
+            <label>Full Name</label>
+           <input type="text" name="full_name" placeholder="Full Name" required class="form-control">
         </div>
 
-        <!-- RIGHT SIDE: ORDER SUMMARY -->
-        <div class="col-lg-4">
-
-            <div class="border p-3">
-
-                <h4>Order Summary</h4>
-
-                <hr>
-
-                <p>
-                    <strong>Total Amount:</strong>
-                    ${{ total_price }}
-                </p>
-
-                <!-- PLACE ORDER FORM -->
-                <form method="POST" action="{% url 'core:place_order' %}">
-                    {% csrf_token %}
-
-                    <input type="text" name="full_name" placeholder="Full Name" class="form-control mb-2" required>
-
-                    <input type="text" name="address" placeholder="Address" class="form-control mb-2" required>
-
-                    <input type="text" name="phone" placeholder="Phone" class="form-control mb-3" required>
-
-                    <button type="submit" class="btn btn-success w-100">
-                        Place Order
-                    </button>
-
-                </form>
-
-            </div>
-
+        <div style="margin-bottom:15px;">
+            <label>Address</label>
+            <input type="text" name="address" placeholder="Address" required class="form-control">
         </div>
 
-    </div>
+        <div style="margin-bottom:15px;">
+            <label>Phone</label>
+            <input type="text" name="phone" placeholder="Phone" required class="form-control">
+        </div>
+
+        <!-- NORMAL ORDER BUTTON -->
+        <button type="submit" style="width:100%; padding:10px; background:black; color:white; border:none;">
+            Place Order (Cash on Delivery)
+        </button>
+    </form>
+
+    <hr style="margin:30px 0;">
+
+    <!-- ================= KHALTI PAYMENT ================= -->
+    <h4 style="text-align:center;">OR</h4>
+
+    <button id="khalti-button"
+        style="width:100%; padding:12px; background:#5C2D91; color:white; border:none; margin-top:10px;">
+        Pay with Khalti
+    </button>
 
 </div>
+
+<!-- ================= KHALTI SCRIPT ================= -->
+
+<script src="https://khalti.com/static/khalti-checkout.js"></script>
+
+<script>
+var config = {
+    "publicKey": "{{ KHALTI_PUBLIC_KEY }}",
+    "productIdentity": "ORDER_{{ request.user.id }}",
+    "productName": "Ecommerce Order",
+    "productUrl": "http://127.0.0.1:8000",
+
+    "eventHandler": {
+        onSuccess(payload) {
+            console.log(payload);
+
+            fetch("{% url 'core:verify_khalti' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+
+                if (data.message === "Payment Successful") {
+                    window.location.href = "/";
+                }
+            });
+        },
+
+        onError(error) {
+            console.log(error);
+            alert("Payment Failed");
+        },
+
+        onClose() {
+            console.log("Khalti widget closed");
+        }
+    }
+};
+
+var checkout = new KhaltiCheckout(config);
+
+document.getElementById("khalti-button").onclick = function () {
+    checkout.show({
+        amount: {{ total_price|default:0 }} * 100   // paisa
+    });
+};
+</script>
 
 {% endblock %}

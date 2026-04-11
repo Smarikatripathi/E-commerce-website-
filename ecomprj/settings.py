@@ -184,3 +184,12 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/user/sign-in/'
 LOGIN_URL = '/user/sign-in/'
+
+# Khalti Payment Gateway Settings
+from dotenv import load_dotenv
+
+load_dotenv()
+
+KHALTI_PUBLIC_KEY = os.getenv("KHALTI_PUBLIC_KEY")
+KHALTI_SECRET_KEY = os.getenv("KHALTI_SECRET_KEY")
+KHALTI_VERIFY_URL = "https://khalti.com/api/v2/payment/verify/"

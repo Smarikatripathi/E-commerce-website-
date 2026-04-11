@@ -1,8 +1,7 @@
 from django.contrib import admin
 from core.models import (
     Category, Vendor, Product, ProductImage,
-    CartOrderItem, CartOrderItems,
-    Tags, Wishlist, ProductReview, Address, HeroSlide
+     Wishlist, ProductReview, Address, HeroSlide, Order, OrderItem, Payment,
 )
 
 class ProductImageAdmin(admin.TabularInline):
@@ -21,7 +20,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = (
         'user', 'title', 'product_image',
         'price', 'in_stock', 'product_status',
-        'date', 'updated','pid','deal_end'
+        'date','pid',
     )
     list_filter = ('in_stock', 'product_status', 'date')
     search_fields = ('title', 'description')
@@ -36,21 +35,12 @@ class VendorAdmin(admin.ModelAdmin):
     list_display = ('title', 'phone', 'address')
     search_fields = ('title', 'phone')
 
-
-class CartOrderItemAdmin(admin.ModelAdmin):
-    list_display = (
-        'user', 'price', 'paid_status',
-        'product_status', 'ordered_date'
-    )
-    list_filter = ('paid_status', 'product_status')
-
-
-class CartOrderItemsAdmin(admin.ModelAdmin):
-    list_display = (
-        'order', 'invoice_no', 'item',
-        'quantity', 'price'
-    )
-    search_fields = ('invoice_no', 'item')
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order', 'product', 'quantity', 'price')
+    search_fields = ('product__title',)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'total_price', 'payment_status', 'paid_status', 'created_at')
+    list_filter = ('payment_status', 'paid_status')
 
 
 class ProductReviewAdmin(admin.ModelAdmin):
@@ -68,15 +58,17 @@ class AddressAdmin(admin.ModelAdmin):
         'state', 'postal_code', 'country'
     )
 
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('order', 'user', 'amount', 'status', 'created_at')
+
 
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Vendor, VendorAdmin)
 admin.site.register(Product, ProductAdmin)
-admin.site.register(CartOrderItem, CartOrderItemAdmin)
-admin.site.register(CartOrderItems, CartOrderItemsAdmin)
+admin.site.register(OrderItem, OrderItemAdmin)
+admin.site.register(Order, OrderAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)
 admin.site.register(Wishlist, WishlistAdmin)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(HeroSlide, HeroSlideAdmin)
-
-
+admin.site.register(Payment, PaymentAdmin)

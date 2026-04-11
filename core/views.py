@@ -1,10 +1,16 @@
 from django.shortcuts import HttpResponse, redirect, render, get_object_or_404
-from core.models import Category, Order, Payment, Vendor, Product, ProductImage, CartOrderItem, CartOrderItems, Tags, Wishlist, ProductReview, Address, HeroSlide, OrderItem
+from core.models import Category, Order, Payment, Vendor, Product, ProductImage, Wishlist, ProductReview, Address, HeroSlide, OrderItem
 from taggit.models import Tag
 # Create your views here.
 from django.shortcuts import render
 from django.db.models import Q
 import requests
+import json
+from django.http import JsonResponse
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+
+from ecomprj import settings
 def about(request):
     return render(request, "core/about.html")
 
@@ -207,25 +213,6 @@ def remove_from_cart(request, product_id):
 
     return redirect('core:cart')
 
-def checkout_view(request):
-    cart = request.session.get('cart', {})
-
-    products = []
-    total_price = 0
-
-    for product_id, quantity in cart.items():
-        product = Product.objects.get(pid=product_id)
-
-        product.quantity = quantity
-        product.total = product.price * quantity
-
-        total_price += product.total
-        products.append(product)
-
-    return render(request, 'core/checkout.html', {
-        'products': products,
-        'total_price': total_price
-    })
 
 def checkout_view(request):
     cart = request.session.get('cart', {})
@@ -325,24 +312,154 @@ def initiate_payment(request, order_id):
         return redirect('core:checkout')
 
 
-def payment_success(request):
-    pidx = request.GET.get("pidx")
 
-    url = "https://khalti.com/api/v2/epayment/lookup/"
-    headers = {
-        "Authorization": "Key YOUR_SECRET_KEY"
+def khalti_verify(request):
+    token = request.GET.get("token")
+    amount = request.GET.get("amount")
+    order_id = request.GET.get("purchase_order_id")
+
+    url = settings.KHALTI_VERIFY_URL
+
+    payload = {
+        "token": token,
+        "amount": amount
     }
 
-    response = requests.post(url, headers=headers, data={"pidx": pidx})
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}"
+    }
+
+    response = requests.post(url, data=payload, headers=headers)
     data = response.json()
 
-    if data["status"] == "Completed":
+    order = Order.objects.get(id=order_id)
 
-        payment = Payment.objects.get(order_id=data["purchase_order_id"])
-        payment.status = "Completed"
-        payment.payment_id = pidx
-        payment.save()
+    if data.get("idx"):
+        order.payment_status = "paid"
+        order.save()
 
-        return render(request, "core/success.html")
+        Payment.objects.create(
+            order=order,
+            user=order.user,
+            amount=order.total_price,
+            transaction_id=data.get("idx"),
+            status="completed"
+        )
 
-    return render(request, "core/failed.html")
+        return render(request, "payment_success.html")
+
+    return render(request, "payment_failed.html")
+
+def khalti_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    url = "https://khalti.com/api/v2/epayment/initiate/"
+
+    payload = {
+        "return_url": "http://127.0.0.1:8000/payment/success/",
+        "website_url": "http://127.0.0.1:8000/",
+        "amount": int(order.total_price * 100),  # paisa
+        "purchase_order_id": str(order.id),
+        "purchase_order_name": "Ecommerce Order",
+    }
+
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}"
+    }
+
+    response = requests.post(url, data=payload, headers=headers)
+    data = response.json()
+
+    if "payment_url" in data:
+        return redirect(data["payment_url"])
+
+    return redirect("payment_failed")
+
+def khalti_success(request):
+    token = request.GET.get("token")
+    amount = request.GET.get("amount")
+    order_id = request.GET.get("purchase_order_id")
+
+    url = settings.KHALTI_VERIFY_URL
+
+    payload = {
+        "token": token,
+        "amount": amount
+    }
+
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}"
+    }
+
+    response = requests.post(url, data=payload, headers=headers)
+    data = response.json()
+
+    order = Order.objects.get(id=order_id)
+
+    if data.get("idx"):
+        order.payment_status = "paid"
+        order.save()
+
+        Payment.objects.create(
+            order=order,
+            user=order.user,
+            amount=order.total_price,
+            transaction_id=data.get("idx"),
+            status="completed"
+        )
+
+        return render(request, "payment_success.html")
+
+    return render(request, "payment_failed.html")
+
+
+def checkout(request):
+    cart = request.session.get('cart', {})   # correct key
+
+    products = []
+    total_price = 0
+
+    for product_id, quantity in cart.items():
+        product = Product.objects.get(pid=product_id)
+
+        product.quantity = quantity
+        product.total = product.price * quantity
+
+        total_price += product.total
+        products.append(product)
+
+    return render(request, 'core/checkout.html', {
+        'products': products,
+        'total_price': total_price,
+        'KHALTI_PUBLIC_KEY': settings.KHALTI_PUBLIC_KEY
+    })
+
+
+@csrf_exempt
+def verify_khalti(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        payload = {
+            'token': data['token'],
+            'amount': data['amount']
+        }
+
+        headers = {
+            'Authorization': f"Key {settings.KHALTI_SECRET_KEY}"
+        }
+
+        response = requests.post(settings.KHALTI_VERIFY_URL, payload, headers=headers)
+        response_data = response.json()
+
+        if response.status_code == 200:
+            return JsonResponse({'message': 'Payment Successful'})
+        else:
+            return JsonResponse({'message': 'Payment Failed'})
+        
+def payment_success(request):
+    return render(request, "core/payment_success.html")
+
+
+def payment_failed(request):
+    return render(request, "core/payment_failed.html")        

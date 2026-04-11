@@ -28,9 +28,15 @@ urlpatterns = [
     path('add-to-cart/<uuid:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/', views.cart_view, name='cart'),
     path('remove-from-cart/<uuid:product_id>/', views.remove_from_cart, name='remove_from_cart'),
-    path('checkout/', views.checkout_view, name='checkout'),
-    path('checkout/', views.checkout_view, name='checkout'),
+    path('checkout/', views.checkout, name='checkout'),
     path('place-order/', views.place_order, name='place_order'),
     path('pay/<int:order_id>/', views.initiate_payment, name='initiate_payment'),
+     path("pay/khalti/<int:order_id>/", views.khalti_payment),
+    path("payment/success/", views.khalti_verify),
+    path("payment/success/", views.khalti_success),
+    path('verify-khalti/', views.verify_khalti, name='verify_khalti'),
+    path("payment/success/", views.payment_success, name="payment_success"),
+    path("payment/failed/", views.payment_failed, name="payment_failed"),
+
 
 ]
