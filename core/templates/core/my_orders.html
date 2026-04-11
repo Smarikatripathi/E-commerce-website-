@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+
+<div style="max-width:900px; margin:auto; padding:20px;">
+
+    <h2>My Orders</h2>
+
+    {% if orders %}
+
+        {% for order in orders %}
+        <div style="border:1px solid #ddd; padding:15px; margin:10px 0; border-radius:8px;">
+
+            <p><strong>Order ID:</strong> #{{ order.id }}</p>
+            <p><strong>Date:</strong> {{ order.created_at }}</p>
+            <p><strong>Total:</strong> Rs. {{ order.total_price }}</p>
+            <p><strong>Status:</strong> {{ order.payment_status }}</p>
+
+            <a href="{% url 'core:order_detail' order.id %}">
+                View Details
+            </a>
+
+        </div>
+        {% endfor %}
+
+    {% else %}
+        <p>No orders found.</p>
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -9,8 +9,10 @@ import json
 from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
 
-from ecomprj import settings
 def about(request):
     return render(request, "core/about.html")
 
@@ -214,26 +216,6 @@ def remove_from_cart(request, product_id):
     return redirect('core:cart')
 
 
-def checkout_view(request):
-    cart = request.session.get('cart', {})
-
-    products = []
-    total_price = 0
-
-    for product_id, quantity in cart.items():
-        product = Product.objects.get(pid=product_id)
-
-        product.quantity = quantity
-        product.total = product.price * quantity
-
-        total_price += product.total
-        products.append(product)
-
-    return render(request, 'core/checkout.html', {
-        'products': products,
-        'total_price': total_price
-    })
-
 def place_order(request):
     cart = request.session.get('cart', {})
 
@@ -312,107 +294,6 @@ def initiate_payment(request, order_id):
         return redirect('core:checkout')
 
 
-
-def khalti_verify(request):
-    token = request.GET.get("token")
-    amount = request.GET.get("amount")
-    order_id = request.GET.get("purchase_order_id")
-
-    url = settings.KHALTI_VERIFY_URL
-
-    payload = {
-        "token": token,
-        "amount": amount
-    }
-
-    headers = {
-        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}"
-    }
-
-    response = requests.post(url, data=payload, headers=headers)
-    data = response.json()
-
-    order = Order.objects.get(id=order_id)
-
-    if data.get("idx"):
-        order.payment_status = "paid"
-        order.save()
-
-        Payment.objects.create(
-            order=order,
-            user=order.user,
-            amount=order.total_price,
-            transaction_id=data.get("idx"),
-            status="completed"
-        )
-
-        return render(request, "payment_success.html")
-
-    return render(request, "payment_failed.html")
-
-def khalti_payment(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-
-    url = "https://khalti.com/api/v2/epayment/initiate/"
-
-    payload = {
-        "return_url": "http://127.0.0.1:8000/payment/success/",
-        "website_url": "http://127.0.0.1:8000/",
-        "amount": int(order.total_price * 100),  # paisa
-        "purchase_order_id": str(order.id),
-        "purchase_order_name": "Ecommerce Order",
-    }
-
-    headers = {
-        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}"
-    }
-
-    response = requests.post(url, data=payload, headers=headers)
-    data = response.json()
-
-    if "payment_url" in data:
-        return redirect(data["payment_url"])
-
-    return redirect("payment_failed")
-
-def khalti_success(request):
-    token = request.GET.get("token")
-    amount = request.GET.get("amount")
-    order_id = request.GET.get("purchase_order_id")
-
-    url = settings.KHALTI_VERIFY_URL
-
-    payload = {
-        "token": token,
-        "amount": amount
-    }
-
-    headers = {
-        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}"
-    }
-
-    response = requests.post(url, data=payload, headers=headers)
-    data = response.json()
-
-    order = Order.objects.get(id=order_id)
-
-    if data.get("idx"):
-        order.payment_status = "paid"
-        order.save()
-
-        Payment.objects.create(
-            order=order,
-            user=order.user,
-            amount=order.total_price,
-            transaction_id=data.get("idx"),
-            status="completed"
-        )
-
-        return render(request, "payment_success.html")
-
-    return render(request, "payment_failed.html")
-
-
 def checkout(request):
     cart = request.session.get('cart', {})   # correct key
 
@@ -470,3 +351,55 @@ def order_success(request, order_id):
     return render(request, "core/order_success.html", {
         "order": order
     })
+
+
+@login_required
+def my_orders(request):
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+
+    return render(request, "core/my_orders.html", {
+        "orders": orders
+    })
+
+@login_required
+def order_detail(request, order_id):
+    order = Order.objects.get(id=order_id, user=request.user)
+    items = OrderItem.objects.filter(order=order)
+
+    return render(request, "core/order_detail.html", {
+        "order": order,
+        "items": items
+    })
+
+# Generate PDF Invoice
+@login_required
+def download_invoice(request, order_id):
+    order = Order.objects.get(id=order_id, user=request.user)
+    items = OrderItem.objects.filter(order=order)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="invoice_{order.id}.pdf"'
+
+    p = canvas.Canvas(response)
+
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(200, 800, "INVOICE")
+
+    p.setFont("Helvetica", 12)
+    p.drawString(50, 760, f"Order ID: {order.id}")
+    p.drawString(50, 740, f"Name: {order.full_name}")
+    p.drawString(50, 720, f"Phone: {order.phone}")
+    p.drawString(50, 700, f"Total: Rs. {order.total_price}")
+
+    y = 660
+    p.drawString(50, y, "Items:")
+    y -= 20
+
+    for item in items:
+        p.drawString(50, y, f"{item.product.title} x {item.quantity} = Rs. {item.price}")
+        y -= 20
+
+    p.showPage()
+    p.save()
+
+    return response
