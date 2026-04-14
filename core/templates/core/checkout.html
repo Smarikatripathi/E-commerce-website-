@@ -1,123 +1,124 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Checkout{% endblock %}
-
 {% block content %}
 
 <div class="container" style="max-width:900px; margin:auto; padding:20px;">
 
-    <h2 style="text-align:center; margin-bottom:20px;">Checkout</h2>
+    <h2 style="text-align:center;">Checkout</h2>
 
-    <!-- ================= ORDER SUMMARY ================= -->
+    <!-- ORDER SUMMARY -->
     <div style="border:1px solid #ddd; padding:15px; margin-bottom:20px;">
-    <h4>Order Summary</h4>
+        <h4>Order Summary</h4>
 
-    {% if products %}
         {% for product in products %}
-            <div style="display:flex; justify-content:space-between; margin:5px 0;"> 
+            <div style="display:flex; justify-content:space-between;">
                 <span>{{ product.title }} (x{{ product.quantity }})</span>
                 <span>Rs. {{ product.total }}</span>
             </div>
         {% endfor %}
 
         <hr>
+        <h4 style="text-align:right;">Total: Rs. {{ total_price }}</h4>
+    </div>
 
-        <h4 style="text-align:right;">
-            Total: Rs. {{ total_price }}
-        </h4>
-    {% else %}
-        <p>Your cart is empty</p>
-    {% endif %}
-</div>
-    <!-- ================= SHIPPING FORM ================= -->
+    <!-- ================= COD FORM ================= -->
     <form method="POST" action="{% url 'core:place_order' %}">
         {% csrf_token %}
 
-        <div style="margin-bottom:15px;">
-            <label>Full Name</label>
-           <input type="text" name="full_name" placeholder="Full Name" required class="form-control">
-        </div>
+        <input type="text" name="full_name" placeholder="Full Name" required class="form-control"><br>
+        <input type="text" name="address" placeholder="Address" required class="form-control"><br>
+        <input type="text" name="phone" placeholder="Phone" required class="form-control"><br>
 
-        <div style="margin-bottom:15px;">
-            <label>Address</label>
-            <input type="text" name="address" placeholder="Address" required class="form-control">
-        </div>
+        <button type="submit" name="payment_method" value="cod"
+            style="width:100%; padding:10px; background:black; color:white;">
+            Cash on Delivery
+        </button>
 
-        <div style="margin-bottom:15px;">
-            <label>Phone</label>
-            <input type="text" name="phone" placeholder="Phone" required class="form-control">
-        </div>
+        <hr style="margin:30px 0;">
 
-        <!-- NORMAL ORDER BUTTON -->
-        <button type="submit" style="width:100%; padding:10px; background:black; color:white; border:none;">
-            Place Order (Cash on Delivery)
+        <!-- ================= KHALTI BUTTON ================= -->
+        <button type="submit" name="payment_method" value="khalti"
+            style="width:100%; padding:10px; background:purple; color:white;">
+            Pay with Khalti
         </button>
     </form>
 
-    <hr style="margin:30px 0;">
-
-    <!-- ================= KHALTI PAYMENT ================= -->
-    <h4 style="text-align:center;">OR</h4>
-
-    <button id="khalti-button"
-        style="width:100%; padding:12px; background:#5C2D91; color:white; border:none; margin-top:10px;">
-        Pay with Khalti
-    </button>
-
+     <a href="{% url 'core:esewa_payment' order.id %}">
+    Pay with eSewa
+</a>
 </div>
 
+{% endblock %}
 <!-- ================= KHALTI SCRIPT ================= -->
-
-<script src="https://khalti.com/static/khalti-checkout.js"></script>
+{% comment %} <script src="https://khalti.com/static/khalti-checkout.js"></script>
 
 <script>
-var config = {
-    "publicKey": "{{ KHALTI_PUBLIC_KEY }}",
-    "productIdentity": "ORDER_{{ request.user.id }}",
-    "productName": "Ecommerce Order",
-    "productUrl": "http://127.0.0.1:8000",
+document.addEventListener("DOMContentLoaded", function () {
 
-    "eventHandler": {
-        onSuccess(payload) {
-            console.log(payload);
-
-            fetch("{% url 'core:verify_khalti' %}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": "{{ csrf_token }}"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-
-                if (data.message === "Payment Successful") {
-                    window.location.href = "/";
-                }
-            });
-        },
-
-        onError(error) {
-            console.log(error);
-            alert("Payment Failed");
-        },
-
-        onClose() {
-            console.log("Khalti widget closed");
-        }
+    if (typeof KhaltiCheckout === "undefined") {
+        alert("Khalti script not loaded!");
+        return;
     }
-};
 
-var checkout = new KhaltiCheckout(config);
+    var config = {
+        publicKey: "{{ KHALTI_PUBLIC_KEY }}",
+        productIdentity: "ORDER_{{ request.user.id }}",
+        productName: "Ecommerce Order",
+        productUrl: window.location.href,
 
-document.getElementById("khalti-button").onclick = function () {
-    checkout.show({
-        amount: {{ total_price|default:0 }} * 100   // paisa
+        eventHandler: {
+            onSuccess(payload) {
+                console.log("SUCCESS:", payload);
+
+                fetch("{% url 'core:verify_khalti' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+
+                    if (data.message === "Payment Successful") {
+                        window.location.href = "/";
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                    alert("Verification error");
+                });
+            },
+
+            onError(error) {
+                console.log("Khalti Error:", error);
+                alert("Payment Failed");
+            },
+
+            onClose() {
+                console.log("Khalti closed");
+            }
+        }
+    };
+
+    var checkout = new KhaltiCheckout(config);
+
+    document.getElementById("khalti-button").addEventListener("click", function () {
+
+        let amount = parseInt("{{ total_price|default:0 }}") * 100;
+
+        if (!amount || amount <= 0) {
+            alert("Invalid total amount");
+            return;
+        }
+
+        checkout.show({
+            amount: amount
+        });
     });
-};
-</script>
 
-{% endblock %}
+});
+</script> {% endcomment %}

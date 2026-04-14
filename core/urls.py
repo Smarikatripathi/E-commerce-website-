@@ -25,21 +25,29 @@ urlpatterns = [
     path("pages/", views.pages, name="pages"),
     path("products/tag/<slug:tag_slug>/", views.tag_list_view, name="tag"),
     path("search/", views.search, name="search"),
+    
     path('add-to-cart/<uuid:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/', views.cart_view, name='cart'),
     path('remove-from-cart/<uuid:product_id>/', views.remove_from_cart, name='remove_from_cart'),
+    
     path('checkout/', views.checkout, name='checkout'),
     path('place-order/', views.place_order, name='place_order'),
-    path('pay/<int:order_id>/', views.initiate_payment, name='initiate_payment'),
-    #path("pay/khalti/<int:order_id>/", views.khalti_payment),
+    #path('pay/<int:order_id>/', views.initiate_payment, name='initiate_payment'),
     #path("payment/success/", views.khalti_verify),
     #path("payment/success/", views.khalti_success, name="khalti_success"),
-    path('verify-khalti/', views.verify_khalti, name='verify_khalti'),
-    path("payment/success/", views.payment_success, name="payment_success"),
-    path("payment/failed/", views.payment_failed, name="payment_failed"),
+    #path('verify-khalti/', views.verify_khalti, name='verify_khalti'),
+    path('pay/khalti/<int:order_id>/', views.khalti_payment, name='khalti_payment'),
+    path("payment-success/", views.payment_success, name="payment_success"),
+    path("payment-failed/", views.payment_failed, name="payment_failed"),
     path("order-success/<int:order_id>/", views.order_success, name="order_success"),
+    
     path("my-orders/", views.my_orders, name="my_orders"),
     path("order/<int:order_id>/", views.order_detail, name="order_detail"),
     path("order/<int:order_id>/invoice/", views.download_invoice, name="download_invoice"),
+    
+    path("test-keys/", views.test_keys, name="test_keys"),
 
+    path("pay/esewa/<int:order_id>/", views.esewa_payment, name="esewa_payment"),
+    path("esewa-success/", views.esewa_success, name="esewa_success"),
+    path("esewa-failed/", views.esewa_failed, name="esewa_failed"),
 ]

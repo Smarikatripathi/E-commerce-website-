@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -186,10 +187,17 @@ LOGOUT_REDIRECT_URL = '/user/sign-in/'
 LOGIN_URL = '/user/sign-in/'
 
 # Khalti Payment Gateway Settings
-from dotenv import load_dotenv
+
 
 load_dotenv()
 
 KHALTI_PUBLIC_KEY = os.getenv("KHALTI_PUBLIC_KEY")
 KHALTI_SECRET_KEY = os.getenv("KHALTI_SECRET_KEY")
-KHALTI_VERIFY_URL = "https://khalti.com/api/v2/payment/verify/"
+
+KHALTI_INITIATE_URL = "https://dev.khalti.com/api/v2/epayment/initiate/"
+KHALTI_LOOKUP_URL = "https://dev.khalti.com/api/v2/epayment/lookup/"
+
+print("KEY:", KHALTI_SECRET_KEY)
+
+
+APPEND_SLASH = True

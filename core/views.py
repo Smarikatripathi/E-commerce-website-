@@ -1,4 +1,4 @@
-from django.shortcuts import HttpResponse, redirect, render, get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404
 from core.models import Category, Order, Payment, Vendor, Product, ProductImage, Wishlist, ProductReview, Address, HeroSlide, OrderItem
 from taggit.models import Tag
 # Create your views here.
@@ -12,17 +12,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from reportlab.pdfgen import canvas
 from django.http import HttpResponse
+from decimal import Decimal, InvalidOperation
+import random
+import uuid
 
-def about(request):
-    return render(request, "core/about.html")
-
-def account(request):
-    return render(request, "core/account.html")  # make sure template exists
-def wishlist(request):
-    return render(request, "core/wishlist.html")  
-
-def orders(request):
-    return render(request, "core/orders.html")
 
 def index(request):
     products = Product.objects.all()[:5]
@@ -36,6 +29,34 @@ def index(request):
         'deals': deals,
         'slides': slides,}
     return render(request, 'core/index.html',context)
+def about(request):
+    return render(request, "core/about.html")
+
+def contact(request):
+    return render(request, "core/contact.html")
+
+def account(request):
+    return render(request, "core/account.html")  # make sure template exists
+def wishlist(request):
+    return render(request, "core/wishlist.html")  
+
+def hot_deals(request):
+    return render(request, "core/hot_deals.html")
+
+def mega_menu(request):
+    return render(request, "core/mega_menu.html")
+
+def blog_list(request):
+    return render(request, "core/blog.html")
+
+def pages(request):
+    return render(request, "core/pages.html")
+
+def shop(request):
+    return render(request, "core/shop.html")
+
+def orders(request):
+    return render(request, "core/orders.html")
 
 def product_list_view(request):
     products = Product.objects.filter(product_status='published')
@@ -65,6 +86,29 @@ def product_list_view(request):
     }
 
     return render(request, 'core/product_list.html', context)
+
+def product_detail_view(request, pid):
+    product = Product.objects.get(pid=pid)
+    product_images = ProductImage.objects.filter(product=product)
+    reviews = ProductReview.objects.filter(product=product)
+    deals = Product.objects.all()
+
+    context = {
+        "product": product,
+        "product_images": product_images,
+        "reviews": reviews,
+    }
+    return render(request, "core/product_detail.html", context)
+
+
+def all_products(request):
+    products = Product.objects.all()
+
+    context = {
+        'products': products
+    }
+    return render(request, 'core/all_products.html', context)
+
 
 def category_list_view(request):
     categories = Category.objects.all()
@@ -99,42 +143,7 @@ def vendor_detail_view(request, vid):
     }
     return render(request, "core/vendor_detail.html", context)
 
-def contact(request):
-    return render(request, "core/contact.html")
 
-def product_detail_view(request, pid):
-    product = Product.objects.get(pid=pid)
-    product_images = ProductImage.objects.filter(product=product)
-    reviews = ProductReview.objects.filter(product=product)
-    deals = Product.objects.all()
-
-    context = {
-        "product": product,
-        "product_images": product_images,
-        "reviews": reviews,
-    }
-    return render(request, "core/product_detail.html", context)
-def all_products(request):
-    products = Product.objects.all()
-
-    context = {
-        'products': products
-    }
-    return render(request, 'core/all_products.html', context)
-def hot_deals(request):
-    return render(request, "core/hot_deals.html")
-
-def mega_menu(request):
-    return render(request, "core/mega_menu.html")
-
-def blog_list(request):
-    return render(request, "core/blog.html")
-
-def pages(request):
-    return render(request, "core/pages.html")
-
-def shop(request):
-    return render(request, "core/shop.html")
 
 def tag_list_view(request, tag_slug=None):
     products = Product.objects.filter( product_status='published').order_by("-id")
@@ -168,7 +177,6 @@ def search(request):
 
 def add_to_cart(request, product_id):
     cart = request.session.get('cart', {})
-
     product_id = str(product_id)
 
     quantity = int(request.POST.get('quantity', 1)) if request.method == "POST" else 1
@@ -214,88 +222,10 @@ def remove_from_cart(request, product_id):
     request.session.modified = True
 
     return redirect('core:cart')
-
-
-def place_order(request):
-    cart = request.session.get('cart', {})
-
-    if request.method == "POST":
-
-        # 1. CREATE ORDER
-        order = Order.objects.create(
-            user=request.user,
-            full_name=request.POST['full_name'],
-            address=request.POST['address'],
-            phone=request.POST['phone'],
-            total_price=0
-        )
-
-        total_price = 0
-
-        # 2. CREATE ORDER ITEMS
-        for product_id, quantity in cart.items():
-            product = Product.objects.get(pid=product_id)
-
-            item_total = product.price * quantity
-            total_price += item_total
-
-            OrderItem.objects.create(
-                order=order,
-                product=product,
-                quantity=quantity,
-                price=product.price
-            )
-
-        # 3. UPDATE ORDER TOTAL
-        order.total_price = total_price
-        order.save()
-
-        # 4. CREATE PAYMENT (PENDING)
-        payment = Payment.objects.create(
-            order=order,
-            user=request.user,
-            amount=total_price,
-            status='Pending'
-        )
-
-        # 5. CLEAR CART
-        request.session['cart'] = {}
-
-        # 6. REDIRECT TO PAYMENT PAGE (later gateway)
-        return redirect('core:order_success', order.id)
-
-    return redirect('core:checkout')
-
-
-
-def initiate_payment(request, order_id):
-    order = Order.objects.get(id=order_id)
-
-    url = "https://khalti.com/api/v2/epayment/initiate/"
-    headers = {
-        "Authorization": "Key YOUR_SECRET_KEY"
-    }
-
-    payload = {
-        "return_url": "http://127.0.0.1:8000/payment-success/",
-        "website_url": "http://127.0.0.1:8000/",
-        "amount": int(order.total_price * 1000),
-        "purchase_order_id": str(order.id),
-        "purchase_order_name": "Order Payment"
-    }
-
-    response = requests.post(url, headers=headers, data=payload)
-    data = response.json()
-
-    if "payment_url" in data:
-        return redirect(data["payment_url"])
-    else:
-        print("KHALTI ERROR:", data)
-        return redirect('core:checkout')
-
-
+@login_required
 def checkout(request):
-    cart = request.session.get('cart', {})   # correct key
+    order = Order.objects.filter(user=request.user).last()
+    cart = request.session.get('cart', {})
 
     products = []
     total_price = 0
@@ -309,41 +239,183 @@ def checkout(request):
         total_price += product.total
         products.append(product)
 
+    # No temp order creation here
+
     return render(request, 'core/checkout.html', {
         'products': products,
         'total_price': total_price,
-        'KHALTI_PUBLIC_KEY': settings.KHALTI_PUBLIC_KEY
+        'order': order,   # Remove this
     })
 
+def place_order(request):
+    cart = request.session.get('cart', {})
 
-@csrf_exempt
-def verify_khalti(request):
     if request.method == "POST":
-        data = json.loads(request.body)
 
-        payload = {
-            'token': data['token'],
-            'amount': data['amount']
-        }
+        payment_method = request.POST.get("payment_method")
 
-        headers = {
-            'Authorization': f"Key {settings.KHALTI_SECRET_KEY}"
-        }
+        order = Order.objects.create(
+            user=request.user,
+            full_name=request.POST.get("full_name"),
+            address=request.POST.get("address"),
+            phone=request.POST.get("phone"),
+            total_price=0
+        )
 
-        response = requests.post(settings.KHALTI_VERIFY_URL, payload, headers=headers)
-        response_data = response.json()
+        total_price = 0
 
-        if response.status_code == 200:
-            return JsonResponse({'message': 'Payment Successful'})
+        for product_id, quantity in cart.items():
+            product = Product.objects.get(pid=product_id)
+
+            item_total = product.price * quantity
+            total_price += item_total
+
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                quantity=quantity,
+                price=product.price
+            )
+
+        order.total_price = total_price
+        order.save()
+
+        request.session['cart'] = {}
+
+        # 🔥 PAYMENT LOGIC
+        if payment_method == "khalti":
+            return redirect('core:khalti_payment', order.id)
+
         else:
-            return JsonResponse({'message': 'Payment Failed'})
-        
+            order.payment_status = "COD"
+            order.save()
+            return redirect('core:order_success', order.id)
+
+    return redirect('core:checkout')
+
+
+
+def khalti_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    try:
+        amount_in_paisa = int(Decimal(order.total_price) * 100)
+    except (InvalidOperation, TypeError, ValueError):
+        request.session["payment_error"] = "Invalid order amount."
+        return redirect("core:payment_failed")
+
+    if amount_in_paisa < 1000:
+        request.session["payment_error"] = "Khalti requires a minimum payment amount of Rs. 10."
+        return redirect("core:payment_failed")
+
+    if not settings.KHALTI_SECRET_KEY:
+        request.session["payment_error"] = "Khalti secret key not configured."
+        return redirect("core:payment_failed")
+
+    payload = {
+        "return_url": request.build_absolute_uri("/payment-success/"),
+        "website_url": request.build_absolute_uri("/"),
+        "amount": amount_in_paisa,
+        "purchase_order_id": str(order_id),
+        "purchase_order_name": f"Order {order_id}",
+        "customer_info": {
+            "name": order.full_name,
+            "email": getattr(order.user, "email", "") or "customer@example.com",
+            "phone": order.phone,
+        },
+    }
+
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    print("PAYLOAD:", payload)
+    print("HEADERS:", {k: v if k != "Authorization" else "***" for k, v in headers.items()})
+
+    try:
+        response = requests.post(settings.KHALTI_INITIATE_URL, json=payload, headers=headers, timeout=30)
+        data = response.json()
+    except requests.RequestException as exc:
+        request.session["payment_error"] = f"Unable to connect to Khalti: {exc}"
+        return redirect("core:payment_failed")
+    except ValueError:
+        request.session["payment_error"] = "Khalti returned an invalid response."
+        return redirect("core:payment_failed")
+
+    print("STATUS:", response.status_code)
+    print("RESPONSE:", data)
+
+    # IMPORTANT CHECK
+    if response.status_code == 200 and "payment_url" in data:
+        return redirect(data["payment_url"])
+
+    error_detail = data.get("detail") or data.get("message") or data
+    request.session["payment_error"] = f"STATUS: {response.status_code} RESPONSE: {error_detail}"
+    return redirect("core:payment_failed")
+
+
 def payment_success(request):
-    return render(request, "core/payment_success.html")
+    pidx = request.GET.get('pidx')
+    status = request.GET.get('status')
+    order_id = request.GET.get('purchase_order_id')
 
+    print("RETURN STATUS:", status)
 
+    if not pidx:
+        return HttpResponse("Invalid request")
+
+    # VERIFY PAYMENT WITH LOOKUP API
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    response = requests.post(
+        settings.KHALTI_LOOKUP_URL,
+        json={"pidx": pidx},
+        headers=headers
+    )
+
+    data = response.json()
+    print(" LOOKUP RESPONSE:", data)
+
+    if data['status'] == "Completed":
+        if order_id:
+            order = Order.objects.filter(id=order_id).first()
+            if order:
+                order.payment_status = "paid"
+                order.paid_status = True
+                order.save(update_fields=["payment_status", "paid_status"])
+                return redirect("core:order_success", order.id)
+        return HttpResponse("Payment Successful ")
+
+    return redirect("core:payment_failed")
+
+# @csrf_exempt
+# def verify_khalti(request):
+#     if request.method == "POST":
+#         data = json.loads(request.body)
+
+#         payload = {
+#             'token': data['token'],
+#             'amount': data['amount']
+#         }
+
+#         headers = {
+#             'Authorization': f"Key {settings.KHALTI_SECRET_KEY}"
+#         }
+
+#         response = requests.post(settings.KHALTI_VERIFY_URL, payload, headers=headers)
+#         response_data = response.json()
+
+#         if response.status_code == 200:
+#             return JsonResponse({'message': 'Payment Successful'})
+#         else:
+#             return JsonResponse({'message': 'Payment Failed'})
 def payment_failed(request):
-    return render(request, "core/payment_failed.html")        
+    return render(request, "core/payment_failed.html", {
+        "payment_error": request.session.pop("payment_error", None)
+    })
 
 def order_success(request, order_id):
     order = Order.objects.get(id=order_id)
@@ -351,7 +423,6 @@ def order_success(request, order_id):
     return render(request, "core/order_success.html", {
         "order": order
     })
-
 
 @login_required
 def my_orders(request):
@@ -370,7 +441,6 @@ def order_detail(request, order_id):
         "order": order,
         "items": items
     })
-
 # Generate PDF Invoice
 @login_required
 def download_invoice(request, order_id):
@@ -403,3 +473,37 @@ def download_invoice(request, order_id):
     p.save()
 
     return response
+
+def test_keys(request):
+    return HttpResponse(
+        f"PUBLIC: {getattr(settings, 'KHALTI_PUBLIC_KEY', 'Not set')}<br>"
+        f"SECRET: {getattr(settings, 'KHALTI_SECRET_KEY', 'Not set')}"
+    )
+
+
+from django.shortcuts import render, redirect
+
+def esewa_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    amount = float(order.total_price)
+
+    context = {
+        "amount": amount,
+        "tax_amount": 0,
+        "total_amount": amount,
+        "transaction_uuid": str(uuid.uuid4()),
+        "product_code": "EPAYTEST",
+        "success_url": "http://127.0.0.1:8000/esewa-success/",
+        "failure_url": "http://127.0.0.1:8000/esewa-failed/",
+    }
+
+    return render(request, "core/esewa_payment.html", context)
+
+
+def esewa_success(request):
+    return render(request, "core/esewa_success.html")
+
+
+def esewa_failed(request):
+    return render(request, "core/esewa_failed.html")
