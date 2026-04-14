@@ -47,7 +47,4 @@ urlpatterns = [
     
     path("test-keys/", views.test_keys, name="test_keys"),
 
-    path("pay/esewa/<int:order_id>/", views.esewa_payment, name="esewa_payment"),
-    path("esewa-success/", views.esewa_success, name="esewa_success"),
-    path("esewa-failed/", views.esewa_failed, name="esewa_failed"),
 ]

@@ -481,29 +481,3 @@ def test_keys(request):
     )
 
 
-from django.shortcuts import render, redirect
-
-def esewa_payment(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-
-    amount = float(order.total_price)
-
-    context = {
-        "amount": amount,
-        "tax_amount": 0,
-        "total_amount": amount,
-        "transaction_uuid": str(uuid.uuid4()),
-        "product_code": "EPAYTEST",
-        "success_url": "http://127.0.0.1:8000/esewa-success/",
-        "failure_url": "http://127.0.0.1:8000/esewa-failed/",
-    }
-
-    return render(request, "core/esewa_payment.html", context)
-
-
-def esewa_success(request):
-    return render(request, "core/esewa_success.html")
-
-
-def esewa_failed(request):
-    return render(request, "core/esewa_failed.html")
